@@ -1,15 +1,19 @@
 Resizable = {}
 
-
-Resizable.makeResizable = function(element) {
-    element = $(element);
+/**
+ * 
+ * @param {Object} cell 
+ */
+Resizable.makeResizable = function(cell) {
+    element = $(cell.element);
 
     element.addClass('floatbookresizable');
 
     element.css({
         resize: 'horizontal',
         overflow: 'auto',
-        minWidth: 300
+        minWidth: 300,
+        width: Resizable.getWidth(cell)
     })
 
     // let resizecontainer = $('<div>');
@@ -37,8 +41,13 @@ Resizable.makeResizable = function(element) {
 
     // element.wrap(resizecontainer);
 
+
+    element.on('mousedown', beginResize);
+
     function beginResize(event) {
 
+        // stop when mouse is released
+        document.addEventListener('mouseup',   endResize);
     }
 
     function onResize(event) {
@@ -46,8 +55,43 @@ Resizable.makeResizable = function(element) {
     }
 
     function endResize(event) {
-
+        Resizable.saveWidth(cell);
     }
 
 
+}
+
+/**
+ * 
+ * @param {Object} cell 
+ */
+Resizable.saveWidth = function(cell) {
+    if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
+
+    cell.metadata.floatbook.floatwidth = cell.element.css('width');
+
+    Jupyter.notebook.set_dirty();
+}
+
+
+/**
+ * 
+ * @param {Object} cell 
+ */
+Resizable.getWidth = function(cell) {
+    // current position in DOM
+    csswidth = cell.element.css('width');
+
+    if ( cell.metadata.floatbook == undefined ) {
+        return csswidth;
+    }
+
+    // position according to metadata
+    width = cell.metadata.floatbook.floatwidth;
+
+    if ( width == undefined ) {
+        return csswidth;
+    } else {
+        return width
+    }
 }

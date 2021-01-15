@@ -1,16 +1,24 @@
 Draggable = {}
 
 
-
-Draggable.makeDraggable = function(element){
-    element = $(element); // using jquery
+/**
+ * 
+ * @param {Object} cell 
+ */
+Draggable.makeDraggable = function(cell){
+    let element = $(cell.element); // using jquery
+    console.log('elem', element);
     
     // style draggable elements
     element.addClass('floatbookdraggable');
 
     element.css({
         background: 'white',
-        width: element.outerWidth()
+        // width: element.outerWidth(), // same width as original element
+        position: 'absolute', // so it can move around freely
+        // get pre existing position from metadata
+        top: Draggable.getPosition(cell).top,
+        left: Draggable.getPosition(cell).left
     })
 
     element.on('mousedown', beginDrag);
@@ -20,6 +28,7 @@ Draggable.makeDraggable = function(element){
     let initialx, initialy, initialtop, initialleft;
     function beginDrag(event) {
         console.log(event.target);
+        console.log('dragelem', element);
         // only activate if clicking on the correct element
         if ( $(event.target).closest(whitelist).length < 1 ) {
             return;
@@ -29,9 +38,6 @@ Draggable.makeDraggable = function(element){
         // save event position
         initialx = event.clientX;
         initialy = event.clientY;
-
-        // absolute position so it can move around anywhere
-        element.css('position', 'absolute');
 
         // save cell position
         initialtop  = parseFloat(element.css('top'));
@@ -61,5 +67,55 @@ Draggable.makeDraggable = function(element){
         // stop the dragging
         document.removeEventListener('mousemove', onDrag);
 
+        Draggable.savePosition(cell);
+    }
+}
+
+
+
+/**
+ * 
+ * @param {Object} cell 
+ */
+Draggable.savePosition = function(cell) {
+    // if ( cell.element.hasClass('cell') ) {
+        if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
+
+        cell.metadata.floatbook.floatposition = [
+            cell.element.css('top'),
+            cell.element.css('left')
+        ];
+
+        Jupyter.notebook.set_dirty();
+    // } else if ( cell.element.hasClass('block') ) {
+
+    // }
+}
+
+/**
+ * 
+ * @param {Object} cell 
+ */
+Draggable.getPosition = function(cell) {
+    // current position in DOM
+    csspos = {
+        top:  cell.element.css('top'),
+        left: cell.element.css('left')
+    }
+
+    if ( cell.metadata.floatbook == undefined ) {
+        return csspos;
+    }
+
+    // position according to metadata
+    pos = cell.metadata.floatbook.floatposition;
+
+    if ( pos == undefined ) {
+        return csspos;
+    } else {
+        return {
+            top:  pos[0],
+            left: pos[1]
+        }
     }
 }
