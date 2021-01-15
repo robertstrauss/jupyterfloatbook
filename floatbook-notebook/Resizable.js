@@ -9,13 +9,6 @@ Resizable.makeResizable = function(cell) {
 
     element.addClass('floatbookresizable');
 
-//     element.css({
-//         resize: 'horizontal',
-//         overflowX: 'auto',
-//         overflowY: 'none',
-//         minWidth: 300,
-//         width: Resizable.getSize(cell).width
-//     });
     Resizable.setSize(element, Resizable.loadSize(element));
 
     
@@ -23,31 +16,6 @@ Resizable.makeResizable = function(cell) {
     element.resizable({
         handles: 'e, w'
     });
-
-    // let resizecontainer = $('<div>');
-
-    // resizecontainer.addClass('floatbookresizecontainer');
-    // resizecontainer.css({
-    //     // position: 'absolute',
-    //     // top: element.css('top'),
-    //     // left: element.css('left'),
-    //     width: element.outerWidth(),
-    //     height: element.outerHeight(),
-    //     padding: '10px solid rgba(0,100,255,0.2)', // borders are what is grabbed to resize
-    //     boxSizing: 'content-box', // borders extend outside element
-    // });
-
-    // element.wrap(resizecontainer);
-
-    // // console.log('ow', element.outerWidth);
-
-    // resizecontainer.resizable({ // resizable using jquery UI
-    //     alsoresize: element, // actual element is resized with it
-    //     handles: 'e, w', // can be resized horizontally only
-    //     minWidth: 300, // px
-    // });
-
-    // element.wrap(resizecontainer);
 
 
     element.on('mousedown', function (event) {

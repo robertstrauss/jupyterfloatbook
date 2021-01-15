@@ -76,20 +76,20 @@ class Draggable {
             draggable.dragoffsety + event.pageY - FloatBook.getPan().y
         );        
 
-        if ( event.pageY - draggable.edgepushmargin < FloatBook.view.offset().top ) {
+        if ( event.pageY - Draggable.edgepushmargin < FloatBook.view.offset().top ) {
             // dragging near the top edge
             FloatBook.panBy(0, 10);
         }
-        else if ( event.pageY + draggable.edgepushmargin
+        else if ( event.pageY + Draggable.edgepushmargin
             > FloatBook.view.offset().top + FloatBook.view.innerHeight() ) {
             // dragging near the bottom edge
             FloatBook.panBy(0, -10);
         }
-        if ( event.pageX - draggable.edgepushmargin < FloatBook.view.offset().left ) {
+        if ( event.pageX - Draggable.edgepushmargin < FloatBook.view.offset().left ) {
             // dragging near the left edge
             FloatBook.panBy(10, 0);
         }
-        else if ( event.pageX + draggable.edgepushmargin
+        else if ( event.pageX + Draggable.edgepushmargin
             > FloatBook.view.offset().left + FloatBook.view.innerWidth() ) {
             // dragging near the right edge
             FloatBook.panBy(-10, 0);
