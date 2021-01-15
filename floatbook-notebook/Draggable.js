@@ -75,24 +75,38 @@ class Draggable {
             draggable.dragoffsetx + event.pageX - FloatBook.getPan().x,
             draggable.dragoffsety + event.pageY - FloatBook.getPan().y
         );        
+        
 
+        // pan towards mouse if its hovering on the edge
         if ( event.pageY - Draggable.edgepushmargin < FloatBook.view.offset().top ) {
             // dragging near the top edge
-            FloatBook.panBy(0, 10);
+            FloatBook.panBy(
+                0,
+                FloatBook.view.offset().top - event.pageY + Draggable.edgepushmargin
+            );
         }
         else if ( event.pageY + Draggable.edgepushmargin
             > FloatBook.view.offset().top + FloatBook.view.innerHeight() ) {
             // dragging near the bottom edge
-            FloatBook.panBy(0, -10);
+            FloatBook.panBy(
+                0,
+                FloatBook.view.offset().top + FloatBook.view.innerHeight() - event.pageY - Draggable.edgepushmargin
+            );
         }
         if ( event.pageX - Draggable.edgepushmargin < FloatBook.view.offset().left ) {
             // dragging near the left edge
-            FloatBook.panBy(10, 0);
+            FloatBook.panBy(
+                FloatBook.view.offset().left - event.pageX + Draggable.edgepushmargin,
+                0
+            );
         }
         else if ( event.pageX + Draggable.edgepushmargin
             > FloatBook.view.offset().left + FloatBook.view.innerWidth() ) {
             // dragging near the right edge
-            FloatBook.panBy(-10, 0);
+            FloatBook.panBy(
+                FloatBook.view.offset().left + FloatBook.view.innerWidth() - event.pageX - Draggable.edgepushmargin,
+                0
+            );
         }
         
     }
