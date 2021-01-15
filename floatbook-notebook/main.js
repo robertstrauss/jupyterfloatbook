@@ -5,9 +5,11 @@ define([
 
     // './CellBlock',
     './Draggable',
-    // './Floatable',
+    './Floatable',
     './FloatBook',
-    './Resizable'
+    './Resizable',
+    './Mosaic',
+    './plain-draggable.min'
 ], function (Jupyter, events, requirejs, cb, d, f, FloatBook) {
 
 // add stylesheet

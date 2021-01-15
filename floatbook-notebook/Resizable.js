@@ -9,12 +9,20 @@ Resizable.makeResizable = function(cell) {
 
     element.addClass('floatbookresizable');
 
-    element.css({
-        resize: 'horizontal',
-        overflow: 'auto',
-        minWidth: 300,
-        width: Resizable.getWidth(cell)
-    })
+//     element.css({
+//         resize: 'horizontal',
+//         overflowX: 'auto',
+//         overflowY: 'none',
+//         minWidth: 300,
+//         width: Resizable.getSize(cell).width
+//     });
+    Resizable.setSize(element, Resizable.loadSize(element));
+
+    
+    // using jquery ui
+    element.resizable({
+        handles: 'e, w'
+    });
 
     // let resizecontainer = $('<div>');
 
@@ -42,20 +50,19 @@ Resizable.makeResizable = function(cell) {
     // element.wrap(resizecontainer);
 
 
-    element.on('mousedown', beginResize);
-
-    function beginResize(event) {
+    element.on('mousedown', function (event) {
 
         // stop when mouse is released
         document.addEventListener('mouseup',   endResize);
-    }
+    });
 
     function onResize(event) {
 
     }
 
     function endResize(event) {
-        Resizable.saveWidth(cell);
+        // Resizable.saveWidth(cell);
+        Resizable.saveSize(element);
     }
 
 
@@ -63,35 +70,61 @@ Resizable.makeResizable = function(cell) {
 
 /**
  * 
- * @param {Object} cell 
+ * @param {Jquery element} block
  */
-Resizable.saveWidth = function(cell) {
-    if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
+Resizable.saveSize = function(block) {
+    
+    let index = $('.floatblock').index(block); // get the index of this block
+    
+    let metadata = FloatBook.getMetadata();
+    if ( metadata.floatsizes == undefined ) {
+        metadata.floatsizes = [];
+    }
+    metadata.floatsizes[index] = Resizable.getSize(block);
+    
+    FloatBook.setMetadata(metadata);
+//     if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
 
-    cell.metadata.floatbook.floatwidth = cell.element.css('width');
+//     cell.metadata.floatbook.floatwidth = cell.element.css('width');
 
-    Jupyter.notebook.set_dirty();
+//     Jupyter.notebook.set_dirty();
 }
 
 
 /**
  * 
- * @param {Object} cell 
+ * @param {Jquery element} element
  */
-Resizable.getWidth = function(cell) {
-    // current position in DOM
-    csswidth = cell.element.css('width');
-
-    if ( cell.metadata.floatbook == undefined ) {
-        return csswidth;
+Resizable.loadSize = function(element) {
+    let index = $('.floatblock').index(element); // get the index of this block
+    
+    let metadata = FloatBook.getMetadata();
+    if ( metadata.floatsizes == undefined ) {
+        metadata.floatsizes = [];
+        FloatBook.setMetadata(metadata);
+        console.log('Size for block not found in metadata.');
     }
+    return metadata.floatsizes[index] || Resizable.getSize(element);
+    
+}
 
-    // position according to metadata
-    width = cell.metadata.floatbook.floatwidth;
 
-    if ( width == undefined ) {
-        return csswidth;
-    } else {
-        return width
-    }
+/**
+ * 
+ * @param {Jquery element} element
+ */
+Resizable.getSize = function(element) {
+    return {
+        width: element.outerWidth(),
+    };
+}
+
+/**
+ *
+ * @param {Jquery element} block
+ */
+Resizable.setSize = function(block, size) {
+    block.css({
+        width: size.width
+    });
 }

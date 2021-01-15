@@ -1,121 +1,169 @@
-Draggable = {}
+class Draggable {
+    static edgepushmargin = 50; // px
+    static className = 'floatbookdraggable';
 
+    constructor(cell) {
+        this.cell = cell;
+        this.element = this.cell.element;
 
-/**
- * 
- * @param {Object} cell 
- */
-Draggable.makeDraggable = function(cell){
-    let element = $(cell.element); // using jquery
-    console.log('elem', element);
     
-    // style draggable elements
-    element.addClass('floatbookdraggable');
+        // style draggable elements
+        this.element.addClass(Draggable.className);
 
-    element.css({
-        background: 'white',
-        // width: element.outerWidth(), // same width as original element
-        position: 'absolute', // so it can move around freely
-        // get pre existing position from metadata
-        top: Draggable.getPosition(cell).top,
-        left: Draggable.getPosition(cell).left
-    })
+        this.element.css({
+            background: 'white',
+            position: 'absolute', // so it can move around freely
+        });
 
-    element.on('mousedown', beginDrag);
+        this.moveTo(this.loadPosition().x, this.loadPosition().y);
 
-    whitelist = '.prompt_container';
+        this.handle = '.prompt_container';
 
-    let initialx, initialy, initialtop, initialleft;
-    function beginDrag(event) {
-        console.log(event.target);
-        console.log('dragelem', element);
+        let draggable = this;
+        this.element.on('mousedown', function (...args) {
+            draggable.beginDrag(draggable, ...args);
+        });
+
+
+        draggable.draglistener = function(...args){
+            draggable.onDrag(draggable, ...args);
+        };
+    }
+
+    /**
+     * 
+     * @param {Draggable} draggable
+     * @param {Object} cell 
+     */
+    beginDrag(draggable, event) {
+        console.log('draggable', draggable.element);
+        // left button only
+        if ( event.button != 0 ) {
+            return;
+        }
+
         // only activate if clicking on the correct element
-        if ( $(event.target).closest(whitelist).length < 1 ) {
+        if ( $(event.target).closest(draggable.handle).length < 1 ) {
             return;
         }
         event.preventDefault();
 
-        // save event position
-        initialx = event.clientX;
-        initialy = event.clientY;
-
-        // save cell position
-        initialtop  = parseFloat(element.css('top'));
-        initialleft = parseFloat(element.css('left'));
+        // save where it was clicked
+        draggable.dragoffsetx = draggable.getPosition().x - event.pageX + FloatBook.getPan().x;
+        draggable.dragoffsety = draggable.getPosition().y - event.pageY + FloatBook.getPan().y;
 
         // add drag listener
-        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mousemove', draggable.draglistener);
         // stop when mouse is released
-        document.addEventListener('mouseup',   endDrag);
+        document.addEventListener('mouseup',   function(...args){
+            draggable.endDrag(draggable, ...args);
+        });
 
     }
 
 
-
-    function onDrag(event) {
+    /**
+     * 
+     * @param {Draggable} draggable
+     * @param {MouseEvent} event 
+     */
+    onDrag(draggable, event) {
         event.preventDefault();
-        
+
         // move element to mouse
-        element.css('top',  initialtop  - initialy + event.clientY);
-        element.css('left', initialleft - initialx + event.clientX);
+        draggable.moveTo(
+            draggable.dragoffsetx + event.pageX - FloatBook.getPan().x,
+            draggable.dragoffsety + event.pageY - FloatBook.getPan().y
+        );        
 
-    }
-
-
-
-    function endDrag(event) {
-        // stop the dragging
-        document.removeEventListener('mousemove', onDrag);
-
-        Draggable.savePosition(cell);
-    }
-}
-
-
-
-/**
- * 
- * @param {Object} cell 
- */
-Draggable.savePosition = function(cell) {
-    // if ( cell.element.hasClass('cell') ) {
-        if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
-
-        cell.metadata.floatbook.floatposition = [
-            cell.element.css('top'),
-            cell.element.css('left')
-        ];
-
-        Jupyter.notebook.set_dirty();
-    // } else if ( cell.element.hasClass('block') ) {
-
-    // }
-}
-
-/**
- * 
- * @param {Object} cell 
- */
-Draggable.getPosition = function(cell) {
-    // current position in DOM
-    csspos = {
-        top:  cell.element.css('top'),
-        left: cell.element.css('left')
-    }
-
-    if ( cell.metadata.floatbook == undefined ) {
-        return csspos;
-    }
-
-    // position according to metadata
-    pos = cell.metadata.floatbook.floatposition;
-
-    if ( pos == undefined ) {
-        return csspos;
-    } else {
-        return {
-            top:  pos[0],
-            left: pos[1]
+        if ( event.pageY - draggable.edgepushmargin < FloatBook.view.offset().top ) {
+            // dragging near the top edge
+            FloatBook.panBy(0, 10);
         }
+        else if ( event.pageY + draggable.edgepushmargin
+            > FloatBook.view.offset().top + FloatBook.view.innerHeight() ) {
+            // dragging near the bottom edge
+            FloatBook.panBy(0, -10);
+        }
+        if ( event.pageX - draggable.edgepushmargin < FloatBook.view.offset().left ) {
+            // dragging near the left edge
+            FloatBook.panBy(10, 0);
+        }
+        else if ( event.pageX + draggable.edgepushmargin
+            > FloatBook.view.offset().left + FloatBook.view.innerWidth() ) {
+            // dragging near the right edge
+            FloatBook.panBy(-10, 0);
+        }
+        
     }
+
+
+    /**
+     * 
+     * @param {Dragable} draggable
+     * @param {MouseEvent} event 
+     */
+    endDrag(draggable, event) {
+        // stop the dragging
+        document.removeEventListener('mousemove', draggable.draglistener);
+
+
+        // save new position
+        draggable.savePosition();
+    }
+
+
+    getMetadataIndex() {
+        return $(`.${Draggable.className}`).index(this.element);
+    }
+
+    /**
+     * 
+     */
+    savePosition() {;
+        
+        let metadata = FloatBook.getMetadata();
+        if ( metadata.floatpositions == undefined ) {
+            metadata.floatpositions = [];
+        }
+        console.log('saving', this.getMetadataIndex(), this.getPosition());
+        metadata.floatpositions[this.getMetadataIndex()] = this.getPosition();
+        
+        FloatBook.setMetadata(metadata);
+    }
+
+
+    loadPosition() {
+        let metadata = FloatBook.getMetadata();
+        if ( metadata.floatpositions == undefined ) {
+            metadata.floatpositions = [];
+        }
+        return metadata.floatpositions[this.getMetadataIndex()] || this.getPosition();
+    }
+
+    /**
+     * 
+     */
+    getPosition() {
+        // current position in DOM
+        return {
+            y: parseInt(this.element.css('top')),
+            x: parseInt(this.element.css('left'))
+        };
+    }
+
+
+    moveTo(x, y) {
+        this.element.css({
+            top:  y,
+            left: x
+        });
+    }
+
+    moveBy(dx, dy) {
+        let pos = Draggable.getPosition(this.element);
+        this.moveTo(pos.x+dx, pos.y+dy);
+    }
+
+
 }
