@@ -1,98 +1,87 @@
-Resizable = {}
+class Resizable {
 
-/**
- * 
- * @param {Object} cell 
- */
-Resizable.makeResizable = function(cell) {
-    element = $(cell.element);
+    /**
+     * 
+     * @param {Object} cell 
+     */
+    constructor(cell) {
+        this.cell = cell;
+        this.element = this.cell.element;
 
-    element.addClass('floatbookresizable');
+        this.element.addClass('floatbookresizable');
 
-    Resizable.setSize(element, Resizable.loadSize(element));
+        this.setSize(this.loadSize());
+
+        
+        // using jquery ui
+        this.element.resizable({
+            handles: 'e, w'
+        });
+
+        let resizable = this;
+        this.element.on('mousedown', function (...args) {
+            resizable.beginResize(resizable, ...args)
+        });
+    }
+
+
+    beginResize(resizable, event) {
+            // stop when mouse is released
+            document.addEventListener('mouseup',   function(...args){
+                resizable.endResize(resizable, ...args);
+            });
+    }
 
     
-    // using jquery ui
-    element.resizable({
-        handles: 'e, w'
-    });
-
-
-    element.on('mousedown', function (event) {
-
-        // stop when mouse is released
-        document.addEventListener('mouseup',   endResize);
-    });
-
-    function onResize(event) {
+    onResize(resizable, event) {
 
     }
 
-    function endResize(event) {
+    endResize(resizable, event) {
         // Resizable.saveWidth(cell);
-        Resizable.saveSize(element);
+        resizable.saveSize();
     }
 
 
-}
+    /**
+     * 
+     */
+    saveSize() {
+        this.cell.metadata.floatsize = this.getSize();
+        
+        Jupyter.notebook.set_dirty();
+    //     if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
 
-/**
- * 
- * @param {Jquery element} block
- */
-Resizable.saveSize = function(block) {
-    
-    let index = $('.floatblock').index(block); // get the index of this block
-    
-    let metadata = FloatBook.getMetadata();
-    if ( metadata.floatsizes == undefined ) {
-        metadata.floatsizes = [];
+    //     cell.metadata.floatbook.floatwidth = cell.element.css('width');
+
+    //     Jupyter.notebook.set_dirty();
     }
-    metadata.floatsizes[index] = Resizable.getSize(block);
-    
-    FloatBook.setMetadata(metadata);
-//     if ( cell.metadata.floatbook == undefined ) cell.metadata.floatbook = {};
-
-//     cell.metadata.floatbook.floatwidth = cell.element.css('width');
-
-//     Jupyter.notebook.set_dirty();
-}
 
 
-/**
- * 
- * @param {Jquery element} element
- */
-Resizable.loadSize = function(element) {
-    let index = $('.floatblock').index(element); // get the index of this block
-    
-    let metadata = FloatBook.getMetadata();
-    if ( metadata.floatsizes == undefined ) {
-        metadata.floatsizes = [];
-        FloatBook.setMetadata(metadata);
-        console.log('Size for block not found in metadata.');
+    /**
+     * 
+     */
+    loadSize() {
+        return this.cell.metadata.floatsize || this.getSize();
     }
-    return metadata.floatsizes[index] || Resizable.getSize(element);
-    
-}
 
 
-/**
- * 
- * @param {Jquery element} element
- */
-Resizable.getSize = function(element) {
-    return {
-        width: element.outerWidth(),
-    };
-}
+    /**
+     * 
+     */
+    getSize() {
+        return {
+            width: this.element.outerWidth(),
+        };
+    }
 
-/**
- *
- * @param {Jquery element} block
- */
-Resizable.setSize = function(block, size) {
-    block.css({
-        width: size.width
-    });
+    /**
+     *
+     */
+    setSize(size) {
+        this.element.css({
+            width: size.width
+        });
+    }
+
 }

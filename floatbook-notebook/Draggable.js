@@ -1,6 +1,7 @@
 class Draggable {
     static edgepushmargin = 50; // px
     static className = 'floatbookdraggable';
+    static cellHandle = '.prompt_container, .input_prompt';
 
     constructor(cell) {
         this.cell = cell;
@@ -15,9 +16,9 @@ class Draggable {
             position: 'absolute', // so it can move around freely
         });
 
-        this.moveTo(this.loadPosition().x, this.loadPosition().y);
+        this.moveTo(this.loadPosition().top, this.loadPosition().left);
 
-        this.handle = '.prompt_container';
+        this.handle = Draggable.cellHandle;
 
         let draggable = this;
         this.element.on('mousedown', function (...args) {
@@ -36,7 +37,6 @@ class Draggable {
      * @param {Object} cell 
      */
     beginDrag(draggable, event) {
-        console.log('draggable', draggable.element);
         // left button only
         if ( event.button != 0 ) {
             return;
@@ -49,8 +49,8 @@ class Draggable {
         event.preventDefault();
 
         // save where it was clicked
-        draggable.dragoffsetx = draggable.getPosition().x - event.pageX + FloatBook.getPan().x;
-        draggable.dragoffsety = draggable.getPosition().y - event.pageY + FloatBook.getPan().y;
+        draggable.dragoffsettop  = draggable.getPosition().top  - event.pageY + FloatBook.getPan().top;
+        draggable.dragoffsetleft = draggable.getPosition().left - event.pageX + FloatBook.getPan().left;
 
         // add drag listener
         document.addEventListener('mousemove', draggable.draglistener);
@@ -58,7 +58,6 @@ class Draggable {
         document.addEventListener('mouseup',   function(...args){
             draggable.endDrag(draggable, ...args);
         });
-
     }
 
 
@@ -72,40 +71,39 @@ class Draggable {
 
         // move element to mouse
         draggable.moveTo(
-            draggable.dragoffsetx + event.pageX - FloatBook.getPan().x,
-            draggable.dragoffsety + event.pageY - FloatBook.getPan().y
-        );        
-        
+            draggable.dragoffsettop  + event.pageY - FloatBook.getPan().top,
+            draggable.dragoffsetleft + event.pageX - FloatBook.getPan().left
+        );
 
         // pan towards mouse if its hovering on the edge
         if ( event.pageY - Draggable.edgepushmargin < FloatBook.view.offset().top ) {
             // dragging near the top edge
             FloatBook.panBy(
-                0,
-                FloatBook.view.offset().top - event.pageY + Draggable.edgepushmargin
+                FloatBook.view.offset().top - event.pageY + Draggable.edgepushmargin,
+                0
             );
         }
         else if ( event.pageY + Draggable.edgepushmargin
             > FloatBook.view.offset().top + FloatBook.view.innerHeight() ) {
             // dragging near the bottom edge
             FloatBook.panBy(
-                0,
-                FloatBook.view.offset().top + FloatBook.view.innerHeight() - event.pageY - Draggable.edgepushmargin
+                FloatBook.view.offset().top + FloatBook.view.innerHeight() - event.pageY - Draggable.edgepushmargin,
+                0
             );
         }
         if ( event.pageX - Draggable.edgepushmargin < FloatBook.view.offset().left ) {
             // dragging near the left edge
             FloatBook.panBy(
-                FloatBook.view.offset().left - event.pageX + Draggable.edgepushmargin,
-                0
+                0,
+                FloatBook.view.offset().left - event.pageX + Draggable.edgepushmargin
             );
         }
         else if ( event.pageX + Draggable.edgepushmargin
             > FloatBook.view.offset().left + FloatBook.view.innerWidth() ) {
             // dragging near the right edge
             FloatBook.panBy(
-                FloatBook.view.offset().left + FloatBook.view.innerWidth() - event.pageX - Draggable.edgepushmargin,
-                0
+                0,
+                FloatBook.view.offset().left + FloatBook.view.innerWidth() - event.pageX - Draggable.edgepushmargin
             );
         }
         
@@ -127,32 +125,19 @@ class Draggable {
     }
 
 
-    getMetadataIndex() {
-        return $(`.${Draggable.className}`).index(this.element);
-    }
 
     /**
      * 
      */
-    savePosition() {;
+    savePosition() {
+        this.cell.metadata.floatposition = this.getPosition();
         
-        let metadata = FloatBook.getMetadata();
-        if ( metadata.floatpositions == undefined ) {
-            metadata.floatpositions = [];
-        }
-        console.log('saving', this.getMetadataIndex(), this.getPosition());
-        metadata.floatpositions[this.getMetadataIndex()] = this.getPosition();
-        
-        FloatBook.setMetadata(metadata);
+        Jupyter.notebook.set_dirty();
     }
 
 
     loadPosition() {
-        let metadata = FloatBook.getMetadata();
-        if ( metadata.floatpositions == undefined ) {
-            metadata.floatpositions = [];
-        }
-        return metadata.floatpositions[this.getMetadataIndex()] || this.getPosition();
+        return this.cell.metadata.floatposition || this.element.offset();
     }
 
     /**
@@ -161,22 +146,31 @@ class Draggable {
     getPosition() {
         // current position in DOM
         return {
-            y: parseInt(this.element.css('top')),
-            x: parseInt(this.element.css('left'))
+            top: parseInt(this.element.css('top')),
+            left: parseInt(this.element.css('left'))
         };
     }
 
-
-    moveTo(x, y) {
+    /**
+     * moves draggable element
+     * @param {Number} top 
+     * @param {Number} left 
+     */
+    moveTo(top, left) {
         this.element.css({
-            top:  y,
-            left: x
+            top:  top,
+            left: left
         });
     }
 
-    moveBy(dx, dy) {
+    /**
+     * changes draggable element position
+     * @param {Number} dtop 
+     * @param {Number} dleft 
+     */
+    moveBy(dtop, dleft) {
         let pos = Draggable.getPosition(this.element);
-        this.moveTo(pos.x+dx, pos.y+dy);
+        this.moveTo(pos.top+dtop, pos.left+dleft);
     }
 
 

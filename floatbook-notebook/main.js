@@ -10,20 +10,19 @@ define([
     './Resizable',
     './Mosaic',
     './plain-draggable.min'
-], function (Jupyter, events, requirejs, cb, d, f, FloatBook) {
+], function (Jupyter, events, requirejs, cb, d, f, fb) {
 
 // add stylesheet
 $('head').append($('<style>').attr('href', requirejs.toUrl('./style.css')));
 
 
+// should be on a notebook loaded event, but that doesn't currently work
+setTimeout(function main() {
+    new FloatBook(Jupyter, events);
+}, 500);
+
+
 console.log('running!');
-
-
-// for (cells) {}
-// floatCells();
-// floatCreatedCells();
-
-
 
 
 
