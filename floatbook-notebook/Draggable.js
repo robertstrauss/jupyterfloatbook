@@ -80,48 +80,32 @@ class Draggable {
             draggable.dragoffsettop  + coords.top,
             draggable.dragoffsetleft + coords.left
         );
-
+        
         // pan towards mouse if its hovering on the edge
-        if ( event.pageY - Draggable.edgepushmargin < FloatBook.view.offset().top ) {
-            // dragging near the top edge
-            FloatBook.panBy(
-                FloatBook.view.offset().top - event.pageY + Draggable.edgepushmargin,
-                0
-            );
-        }
-        else if ( event.pageY + Draggable.edgepushmargin
-            > FloatBook.view.offset().top + FloatBook.view.innerHeight() ) {
-            // dragging near the bottom edge
-            FloatBook.panBy(
-                FloatBook.view.offset().top + FloatBook.view.innerHeight() - event.pageY - Draggable.edgepushmargin,
-                0
-            );
-        }
-        if ( event.pageX - Draggable.edgepushmargin < FloatBook.view.offset().left ) {
-            // dragging near the left edge
-            FloatBook.panBy(
-                0,
-                FloatBook.view.offset().left - event.pageX + Draggable.edgepushmargin
-            );
-        }
-        else if ( event.pageX + Draggable.edgepushmargin
-            > FloatBook.view.offset().left + FloatBook.view.innerWidth() ) {
-            // dragging near the right edge
-            FloatBook.panBy(
-                0,
-                FloatBook.view.offset().left + FloatBook.view.innerWidth() - event.pageX - Draggable.edgepushmargin
-            );
+        for ( let x of [-1, 1] ) { // two for loops cycle over corners of box
+            for ( let y of [-1, 1] ) {
+                // check if this corner (x,y) is outside of FloatBook.view
+                if ( $(document.elementFromPoint(
+                            x*Draggable.edgepushmargin + event.pageX,
+                            y*Draggable.edgepushmargin + event.pageY
+                        )).closest(FloatBook.view).length < 1 ) {
+                    // if so, pan towards that corner
+                    FloatBook.panBy(
+                        -10*y,
+                        -10*x
+                    );
+                }
+            }
         }
         
-        
-        draggable.previousDragOver = draggable.dragOver;
-        draggable.dragOver = document.elementFromPoint(event.pageX, event.pageY);
-        // interact the dragged and the hovered over element
-        draggable.onDragOver(draggable.element, draggable.dragOver);
-        if ( ! draggable.previousDragOver === draggable.dragOver ) {
-            // if what was previously dragged over isn't anymore
-            draggable.onDragOut(draggable.element, draggable.previousDragOver);
-        }
+        // draggable.previousDragOver = draggable.dragOver;
+        // draggable.dragOver = document.elementFromPoint(event.pageX, event.pageY);
+        // // interact the dragged and the hovered over element
+        // draggable.onDragOver(draggable.element, draggable.dragOver);
+        // if ( ! draggable.previousDragOver === draggable.dragOver ) {
+        //     // if what was previously dragged over isn't anymore
+        //     draggable.onDragOut(draggable.element, draggable.previousDragOver);
+        // }
     }
 
 
