@@ -51,7 +51,10 @@ class FloatBook {
             );
         });
         FloatBook.notebookroot.on('mousedown', function (event) {
-            FloatBook.beginDrag(event);
+            // only allow clicking on the grey area
+            if ( event.target == FloatBook.notebookroot.get(0) ) {
+                FloatBook.beginDrag(event);
+            }
         });
     }
 
@@ -93,7 +96,6 @@ class FloatBook {
 
 
     static zoomBy(scale) {
-        console.log('zoomby', scale);
         FloatBook.zoomTo(FloatBook.getZoom()*scale);
     }
     static zoomTo(scale) {

@@ -47,8 +47,6 @@ class Draggable {
             return;
         }
 
-        event.stopPropagation();
-
         // save where it was clicked
         const coords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
         draggable.dragoffsettop  = draggable.getPosition().top  - coords.top;
@@ -60,9 +58,6 @@ class Draggable {
         document.addEventListener('mouseup',   function(...args){
             draggable.endDrag(draggable, ...args);
         });
-
-        // so we can get whats beneath it on the other mouse events
-        draggable.element.css('pointer-events', 'none');
     }
 
 
@@ -98,6 +93,10 @@ class Draggable {
             }
         }
         
+
+        // // so we can get whats beneath it on the other mouse events
+        // draggable.element.css('pointer-events', 'none');
+
         // draggable.previousDragOver = draggable.dragOver;
         // draggable.dragOver = document.elementFromPoint(event.pageX, event.pageY);
         // // interact the dragged and the hovered over element
@@ -106,6 +105,10 @@ class Draggable {
         //     // if what was previously dragged over isn't anymore
         //     draggable.onDragOut(draggable.element, draggable.previousDragOver);
         // }
+
+        // // interact the dragged and the dropped on element
+        // draggable.onDrop(draggable.element, document.elementFromPoint(event.pageX, event.pageY));
+        // draggable.element.css('pointer-events', 'all');
     }
 
 
@@ -122,9 +125,7 @@ class Draggable {
         // save new position
         draggable.savePosition();
 
-        // interact the dragged and the dropped on element
-        draggable.onDrop(draggable.element, document.elementFromPoint(event.pageX, event.pageY));
-        draggable.element.css('pointer-events', 'all');
+        
     }
 
 
