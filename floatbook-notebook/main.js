@@ -3,13 +3,14 @@ define([
     'base/js/events',
     'require',
 
-    // './CellBlock',
+    './CellBlock',
     './Draggable',
     './Floatable',
     './FloatBook',
-    './Resizable',
     './Mosaic',
-    './plain-draggable.min'
+    './Resizable',
+
+    // './plain-draggable.min'
 ], function (Jupyter, events, requirejs, cb, d, f, fb) {
 
 // add stylesheet

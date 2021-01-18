@@ -34,7 +34,7 @@ class Draggable {
     /**
      * 
      * @param {Draggable} draggable
-     * @param {Object} cell 
+     * @param {MouseEvent} event
      */
     beginDrag(draggable, event) {
         // left button only
@@ -46,11 +46,13 @@ class Draggable {
         if ( $(event.target).closest(draggable.handle).length < 1 ) {
             return;
         }
-        event.preventDefault();
+
+        event.stopPropagation();
 
         // save where it was clicked
-        draggable.dragoffsettop  = draggable.getPosition().top  - event.pageY + FloatBook.getPan().top;
-        draggable.dragoffsetleft = draggable.getPosition().left - event.pageX + FloatBook.getPan().left;
+        const coords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
+        draggable.dragoffsettop  = draggable.getPosition().top  - coords.top;
+        draggable.dragoffsetleft = draggable.getPosition().left - coords.left;
 
         // add drag listener
         document.addEventListener('mousemove', draggable.draglistener);
@@ -58,6 +60,9 @@ class Draggable {
         document.addEventListener('mouseup',   function(...args){
             draggable.endDrag(draggable, ...args);
         });
+
+        // so we can get whats beneath it on the other mouse events
+        draggable.element.css('pointer-events', 'none');
     }
 
 
@@ -70,9 +75,10 @@ class Draggable {
         event.preventDefault();
 
         // move element to mouse
+        const coords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
         draggable.moveTo(
-            draggable.dragoffsettop  + event.pageY - FloatBook.getPan().top,
-            draggable.dragoffsetleft + event.pageX - FloatBook.getPan().left
+            draggable.dragoffsettop  + coords.top,
+            draggable.dragoffsetleft + coords.left
         );
 
         // pan towards mouse if its hovering on the edge
@@ -107,6 +113,15 @@ class Draggable {
             );
         }
         
+        
+        draggable.previousDragOver = draggable.dragOver;
+        draggable.dragOver = document.elementFromPoint(event.pageX, event.pageY);
+        // interact the dragged and the hovered over element
+        draggable.onDragOver(draggable.element, draggable.dragOver);
+        if ( ! draggable.previousDragOver === draggable.dragOver ) {
+            // if what was previously dragged over isn't anymore
+            draggable.onDragOut(draggable.element, draggable.previousDragOver);
+        }
     }
 
 
@@ -122,7 +137,39 @@ class Draggable {
 
         // save new position
         draggable.savePosition();
+
+        // interact the dragged and the dropped on element
+        draggable.onDrop(draggable.element, document.elementFromPoint(event.pageX, event.pageY));
+        draggable.element.css('pointer-events', 'all');
     }
+
+
+    onDragOver(event, destinationElement) {
+
+        // let cell = CellBlock.getParentCell(destinationElement);
+        // if ( cell !== null ) { // if there is a parent cell
+        //     if ( CellBlock.isInBlock(destinationElement) ) {
+        //         let direction = CellBlock.getOrientation(CellBlock.getParentBlock(destinationElement));
+        //         if ( direction == 'row' ) {
+        //             if ( event.pageX - cell.offset().left > 0.5*cell.outerWidth() )
+        //         }
+        //     }
+        // } else if ( destinationElement.is(FloatBook.notebookroot) ) {
+        //     FloatBook.cellroot.append(sourceCell);
+        // } else {
+        //     // didn't drop on a logical thing
+        // }
+    }
+    onDragOut(destinationElement) {
+
+    }
+    onDrop() {
+
+    }
+
+
+
+
 
 
 
@@ -141,7 +188,7 @@ class Draggable {
     }
 
     /**
-     * 
+     * @returns object with 'top' and 'left' properties
      */
     getPosition() {
         // current position in DOM
