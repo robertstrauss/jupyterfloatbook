@@ -4,6 +4,7 @@ define([
     'require',
 
     './CellBlock',
+    './CellDraggable',
     './Draggable',
     './Floatable',
     './FloatBook',
@@ -11,7 +12,7 @@ define([
     './Resizable',
 
     // './plain-draggable.min'
-], function (Jupyter, events, requirejs, cb, d, f, fb) {
+], function (Jupyter, events, requirejs) {
 
 // add stylesheet
 $('head').append($('<style>').attr('href', requirejs.toUrl('./style.css')));

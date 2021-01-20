@@ -50,12 +50,15 @@ class FloatBook {
                 (newcoords.left-coords.left)*FloatBook.getZoom()
             );
         });
-        FloatBook.notebookroot.on('mousedown', function (event) {
-            // only allow clicking on the grey area
-            if ( event.target == FloatBook.notebookroot.get(0) ) {
-                FloatBook.beginDrag(event);
-            }
-        });
+        
+        FloatBook.draggable = new Draggable(
+            FloatBook.view,
+            FloatBook.beginDrag,
+            FloatBook.onDrag,
+            FloatBook.endDrag,
+            undefined,
+            [0, 1]
+        );
     }
 
     /**
@@ -73,15 +76,11 @@ class FloatBook {
 
 
     static beginDrag(event) {
-        if ( event.button !== 0 ) {
-            return;
+        if ( ! FloatBook.notebookroot.is(event.target) ) {
+            return false; // stop drag
         }
-
         FloatBook.dragoffsettop  = FloatBook.getPan().top  - event.pageY;
         FloatBook.dragoffsetleft = FloatBook.getPan().left - event.pageX;
-
-        document.addEventListener('mousemove', FloatBook.onDrag);
-        document.addEventListener('mouseup', FloatBook.endDrag);
     }
     static onDrag(event) {
         FloatBook.panTo(
@@ -90,7 +89,6 @@ class FloatBook {
         );
     }
     static endDrag(event) {
-        document.removeEventListener('mousemove', FloatBook.onDrag);
     }
 
 
@@ -199,7 +197,7 @@ class FloatBook {
     static addCell = function(cell) {
         // Floatable.float(cell.element);
         new Resizable(cell);
-        new Draggable(cell);
+        new CellDraggable(cell);
     }
 
 }
