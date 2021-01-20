@@ -10,6 +10,7 @@ define([
     './FloatBook',
     './Mosaic',
     './Resizable',
+    './WireIO'
 
     // './plain-draggable.min'
 ], function (Jupyter, events, requirejs) {

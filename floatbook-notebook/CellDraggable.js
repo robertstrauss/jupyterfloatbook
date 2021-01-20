@@ -3,10 +3,14 @@ class CellDraggable {
     static className = 'floatbookcelldraggable';
     static cellHandle = '.prompt_container, .input_prompt';
 
-    constructor(cell) {
+    constructor(cell, element) {
         this.cell = cell;
-        this.element = this.cell.element;
-    
+        if ( element == undefined ) {
+            this.element = this.cell.element;
+        } else {
+            this.element = element;
+        }
+        
         // style draggable elements
         this.element.addClass(Draggable.className);
 

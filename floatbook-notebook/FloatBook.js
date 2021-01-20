@@ -196,8 +196,10 @@ class FloatBook {
      */
     static addCell = function(cell) {
         // Floatable.float(cell.element);
-        new Resizable(cell);
-        new CellDraggable(cell);
+        const wireio = new WireIO(cell.element);
+        const wrapper = wireio.getWrapper();
+        new Resizable(cell, wrapper);
+        new CellDraggable(cell, wrapper);
     }
 
 }
