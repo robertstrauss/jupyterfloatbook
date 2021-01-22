@@ -56,7 +56,6 @@ class FloatBook {
             FloatBook.beginDrag,
             FloatBook.onDrag,
             FloatBook.endDrag,
-            undefined,
             [0, 1]
         );
     }
@@ -165,22 +164,6 @@ class FloatBook {
     //     }
     // }
 
-
-
-    /**
-     * call 'callback' on the metadata object and set the metadata to what it returns.
-     * @param {function} callback 
-     */
-    static changeMetadata = function(callback) {
-        try {
-            FloatBook.setMetadata(callback(FloatBook.getMetadata()));
-            return 0;
-        } catch (e) {
-            console.warn('Failed to set FloatBook metadata due to an error:', e);
-            return 1;
-        }
-    }
-
     static getMetadata = function() {
         return Jupyter.notebook.metadata.floatbook || {};
     }
@@ -195,11 +178,15 @@ class FloatBook {
      * @param {Object} cell 
      */
     static addCell = function(cell) {
-        // Floatable.float(cell.element);
-        const wireio = new WireIO(cell.element);
-        const wrapper = wireio.getWrapper();
-        new Resizable(cell, wrapper);
-        new CellDraggable(cell, wrapper);
+        if ( cell.metadata.floatbook == undefined ) {
+            cell.metadata.floatbook = {};
+        }
+        const cellblock = CellBlock.getCellBlockElement(cell.metadata.floatbook.cellblock);
+        cellblock.append(cell.element);
+
+        new WireIO(cellblock);
+        // new Resizable(cellblock);
+        new CellDraggable(cell);
     }
 
 }

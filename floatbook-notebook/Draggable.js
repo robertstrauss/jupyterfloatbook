@@ -7,7 +7,6 @@ class Draggable {
      * @param {Function} beginDrag 
      * @param {Function} onDrag 
      * @param {Function} endDrag 
-     * @param {Selector or Element} handle 
      * @param {Array<Integer>} buttons 
      */
     constructor(
@@ -15,7 +14,6 @@ class Draggable {
         beginDrag=()=>{},
         onDrag=()=>{},
         endDrag=()=>{},
-        handle=undefined,
         buttons=undefined
     ) {
         this.element = $(element);
@@ -27,7 +25,7 @@ class Draggable {
         this.clientOnDrag = onDrag;
         this.clientEndDrag = endDrag;
 
-        this.handle = handle;
+        this.buttons = buttons;
 
         let draggable = this;
         this.element.on('mousedown', function (...args) {
@@ -46,18 +44,9 @@ class Draggable {
      * @param {MouseEvent} event
      */
     beginDrag(draggable, event) {
-        // left button only
+        // left/middle/right button only
         if ( draggable.buttons !== undefined ) {
-            console.log(draggable.buttons, event.button);
             if ( draggable.buttons.indexOf(event.button) < 0 ) {
-                return;
-            }
-        }
-
-        if ( draggable.handle !== undefined ) {
-            console.log(draggable.handle);
-            // only activate if clicking on the correct element
-            if ( $(event.target).closest($(draggable.handle)).length < 1 ) {
                 return;
             }
         }

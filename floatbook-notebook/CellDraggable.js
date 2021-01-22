@@ -23,12 +23,11 @@ class CellDraggable {
 
         const draggable = this;
         this.draggable = new Draggable(
-                this.element,
+                this.element.find(CellDraggable.cellHandle),
                 (e)=>{draggable.beginDrag(draggable, e)},
                 (e)=>{draggable.onDrag(draggable, e)},
                 (e)=>{draggable.endDrag(draggable, e)},
-                Draggable.cellHandle,
-                [0]
+                [0] // only allow left mouse button to drag
         );
     }
 

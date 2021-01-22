@@ -1,57 +1,53 @@
 class CellBlock {
-    constructor () {
+    static className = 'floatbookcellblock';
+    static UID = 0;
 
+    static getNewUID() {
+        let uid = CellBlock.UID;
+        while ( $(`[data-cellblockuid=${uid}]`).length > 0 ) {
+            uid++;
+            CellBlock.UID++;
+        }
+        return uid;
+    }
+
+    static getCellBlockElement(uid) {
+        let elem = $(`[data-cellblockuid=${uid}]`);
+        if ( elem.length < 1 ) {
+            const cellblock = CellBlock.makeCellBlock(uid);
+            elem = cellblock.getElement();
+        }
+        return elem;
     }
 
     /**
-     * manages when sourceElement is dropped on destinationElement
-     * @param {Jquery element} sourceElement 
-     * @param {Jquery element} destinationElement 
+     * collapseobserver detects when a cellblock is emptied and removes it
      */
-    static onDrop(event, sourceElement, destinationElement) {
-
-    }
-
-    /**
-     * manages when sourceElement is dragged over destinationElement
-     * @param {Jquery element} sourceElement 
-     * @param {Jquery element} destinationElement 
-     */
-    static onDragOver(event, sourceElement, destinationElement) {
-        destinationElement = $(destinationElement);
-
-        let desinationCell = destinationElement.closest('.cell');
-        // dropping on another cell (= definition in if statement intentional)
-        if ( destinationCell.length > 0 ) {
-            
-            let destinationBlock = destinationCell.closest('.cellblock');
-            if ( destinationBlock.length > 0 ) {
-                let dropPos, dropWin;
-                
-                if ( destinationBlock.hasClass('cellblockrow') ) {
-                    dropPos = event.pageX - destinationCell.offset().left;
-                    dropWin = destinationCell.outerWidth();
-                } else {
-                    dropPos = event.pageY - destinationCell.offset().top;
-                    dropWin = destinationCell.outerHeight();
-                }
-
-                if ( dropPos > 0.5*dropWin ) {
-                    insert = 'after'
-                } else {
-                    insert = 'before'
+    static collapseobserver = new MutationObserver(function(mutations, observer) {
+        for ( let mutation of mutations ) {
+            if ( mutation.removedNodes.length > 0 ) {
+                if ( mutation.target.closest(CellBlock.className).children('.cell').length < 1 ) {
+                    mutation.target.closest(CellBlock.className).remove();
                 }
             }
+        }
+    });
 
+    static makeCellBlock(uid=undefined) {
+        this.element = $('<div>');
+        this.element.addClass(CellBlock.className);
+
+        if ( uid == undefined ) {
+            uid = CellBlock.getNewUID();
         }
-        // dropping on empty space
-        else if ( destinationElement.is(FloatBook.notebookroot) ) {
-            sourceElement.appendTo(FloatBook.cellroot);
-        }
-        else {
-            // who knows what they're dragging over??
-        }
+        this.setUID(uid);
+        this.element.attr('data-cellblockuid', uid);
+
+
+        CellBlock.collapseobserver.observe(this.element.get(0), {
+            subtree: false,
+            attributes: false,
+            childList: true,
+        });
     }
 }
-
-// return CellBlock;

@@ -4,13 +4,8 @@ class Resizable {
      * 
      * @param {Object} cell 
      */
-    constructor(cell, element) {
-        this.cell = cell;
-        if ( element == undefined ) {
-            this.element = this.cell.element;
-        } else {
-            this.element = element;
-        }
+    constructor(element) {
+        this.element = element;
 
         this.element.addClass('floatbookresizable');
 
