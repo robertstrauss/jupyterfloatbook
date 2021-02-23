@@ -16,7 +16,7 @@ class CellDraggable {
 
         this.element.css({
             background: 'white',
-            position: 'absolute', // so it can move around freely
+            // position: 'absolute', // so it can move around freely
         });
 
         this.moveTo(this.loadPosition().top, this.loadPosition().left);

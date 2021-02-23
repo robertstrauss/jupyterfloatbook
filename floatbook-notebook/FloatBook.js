@@ -7,7 +7,7 @@ class FloatBook {
     constructor(Jupyter, events) {
         // bind event
         events.on('create.Cell', (e,data)=>{
-            FloatBook.addCell(data.cell);
+            FloatBook.initiateCell(data.cell);
         });
 
         // load mosaic structure
@@ -33,11 +33,11 @@ class FloatBook {
             overflow: 'shown'
         });
 
-        // add zoom and pan listeners
+        // add zoom listener
         FloatBook.notebookroot.on('wheel', function (event) {
             // get initial coordinates of mouse
             const coords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
-            
+
             // do the zoom
             FloatBook.zoomBy(Math.exp(-event.originalEvent.deltaY/500));
             
@@ -51,12 +51,13 @@ class FloatBook {
             );
         });
         
+        // pan listener
         FloatBook.draggable = new Draggable(
             FloatBook.view,
             FloatBook.beginDrag,
             FloatBook.onDrag,
             FloatBook.endDrag,
-            [0, 1]
+            [0, 1] // left or middle button only
         );
     }
 
@@ -73,7 +74,7 @@ class FloatBook {
         };
     }
 
-
+    
     static beginDrag(event) {
         if ( ! FloatBook.notebookroot.is(event.target) ) {
             return false; // stop drag
@@ -86,11 +87,11 @@ class FloatBook {
             FloatBook.dragoffsettop  + event.pageY,
             FloatBook.dragoffsetleft + event.pageX
         );
+    }static zoomBy(scale) {
+        FloatBook.zoomTo(FloatBook.getZoom()*scale);
     }
     static endDrag(event) {
     }
-
-
 
     static zoomBy(scale) {
         FloatBook.zoomTo(FloatBook.getZoom()*scale);
@@ -139,30 +140,6 @@ class FloatBook {
     }
 
 
-    
-
-    /**
-     * Each argument passed will be interpreted as a key
-     * the last argument will be interpreted as a value
-     * 
-     */
-    // FloatBook.setMetadataEntry = function() {
-    //     try {
-    //         // recursively create and index into objects.
-    //         obj = Jupyter.notebook.metadata.FloatBook;
-    //         // note: length-1 is intented to go 1 short of the total length. 
-    //         for ( let i = 0; i < arguments.length-1; i++ ) {
-    //             if ( obj[arguments[i]] == undefined ) {
-    //                 obj[arguments[i]] = {}
-    //             }
-    //         }
-    //         // the final argument is the value at the end of the rabit hole
-    //         obj[arguments[i]] = arguments[i+1];
-    //         Jupyter.notebook.set_dirty();
-    //     } catch (e) {
-    //         console.warn('Failed to set metadata due to error:', e);
-    //     }
-    // }
 
     static getMetadata = function() {
         return Jupyter.notebook.metadata.floatbook || {};
@@ -181,8 +158,17 @@ class FloatBook {
         if ( cell.metadata.floatbook == undefined ) {
             cell.metadata.floatbook = {};
         }
-        const cellblock = CellBlock.getCellBlockElement(cell.metadata.floatbook.cellblock);
-        cellblock.append(cell.element);
+
+        let cellblock;
+
+        if ( cell.metadata.floatbook.cellblock == undefined ) {
+            cell.metadata.floatbook.cellblock = {};
+            cellblock = CellBlock.makeCellBlock();
+            cellblock.appendTo(FloatBook.cellroot);
+            cellblock.append(cell.element);
+        } else {
+            cellblock = CellBlock.getCellBlock(cell.metadata.floatbook.cellblock).append(cell.element);
+        }
 
         new WireIO(cellblock);
         // new Resizable(cellblock);

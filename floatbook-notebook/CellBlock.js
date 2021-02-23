@@ -3,20 +3,20 @@ class CellBlock {
     static UID = 0;
 
     static getNewUID() {
-        let uid = CellBlock.UID;
-        while ( $(`[data-cellblockuid=${uid}]`).length > 0 ) {
-            uid++;
-            CellBlock.UID++;
-        }
-        return uid;
+        // let uid = CellBlock.UID;
+        // while ( $(`[data-cellblockuid=${uid}]`).length > 0 ) {
+        //     uid++;
+        //     CellBlock.UID++;
+        // }
+        // return uid;
+        return Math.floor((Math.random() * 1e9));
     }
 
-    static getCellBlockElement(uid) {
-        let elem = $(`[data-cellblockuid=${uid}]`);
-        if ( elem.length < 1 ) {
-            const cellblock = CellBlock.makeCellBlock(uid);
-            elem = cellblock.getElement();
-        }
+    static getCellBlock(uid) {
+        let elem = $(`[${CellBlock.dataAttrTag}=${uid}]`);
+        // if ( elem.length < 1 ) {
+        //     elem = CellBlock.makeCellBlock(uid);
+        // }
         return elem;
     }
 
@@ -34,20 +34,31 @@ class CellBlock {
     });
 
     static makeCellBlock(uid=undefined) {
-        this.element = $('<div>');
-        this.element.addClass(CellBlock.className);
+        const element = $('<div>');
+        element.addClass(CellBlock.className);
+        element.css({
+            display: 'inline-block'
+        });
 
         if ( uid == undefined ) {
             uid = CellBlock.getNewUID();
         }
-        this.setUID(uid);
-        this.element.attr('data-cellblockuid', uid);
+        CellBlock.setUID(element, uid);
 
-
-        CellBlock.collapseobserver.observe(this.element.get(0), {
+        CellBlock.collapseobserver.observe(element.get(0), {
             subtree: false,
             attributes: false,
             childList: true,
         });
+;
+        return element
+    }
+
+    static dataAttrTag = 'data-floatbook-cb-uid';
+    static setUID(element, uid) {
+        element.attr(CellBlock.dataAttrTag, uid);
+    }
+    static getUID(element) {
+        return element.attr(CellBlock.dataAttrTag);
     }
 }
