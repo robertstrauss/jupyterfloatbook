@@ -161,21 +161,22 @@ class FloatBook {
 
         let cellblock;
 
-        if ( cell.metadata.floatbook.cellblock == undefined ) {
-            cell.metadata.floatbook.cellblock = {};
-            cellblock = CellBlock.makeCellBlock();
+        // retrieve cellblock from DOM if it is already part of one
+        if ( cell.metadata.floatbook.cellblockid !== undefined ) {
+            cellblock = CellBlock.getCellBlock(cell.metadata.floatbook.cellblockid);
+        }
+        // if its not, or if the cell block it needs isn't in the DOM yet, create it
+        if ( cellblock.length < 1 || cell.metadata.floatbook.cellblockid == undefined ) {
+            cellblock = CellBlock.makeCellBlock(cell.metadata.floatbook.cellblockid);
             cellblock.appendTo(FloatBook.cellroot);
             cellblock.append(cell.element);
-        } else {
-            cellblock = CellBlock.getCellBlock(cell.metadata.floatbook.cellblock).append(cell.element);
+            cell.metadata.floatbook.cellblockid = CellBlock.getUID(cellblock);
         }
 
-        new WireIO(cellblock);
+        // new WireIO(cellblock);
         // new Resizable(cellblock);
         new CellDraggable(cell);
     }
 
 }
-
-
 

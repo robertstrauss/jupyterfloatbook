@@ -26,8 +26,8 @@ class CellBlock {
     static collapseobserver = new MutationObserver(function(mutations, observer) {
         for ( let mutation of mutations ) {
             if ( mutation.removedNodes.length > 0 ) {
-                if ( mutation.target.closest(CellBlock.className).children('.cell').length < 1 ) {
-                    mutation.target.closest(CellBlock.className).remove();
+                if ( $(mutation.target).closest(CellBlock.className).children('.cell').length < 1 ) {
+                    $(mutation.target).closest(CellBlock.className).remove();
                 }
             }
         }
@@ -37,7 +37,8 @@ class CellBlock {
         const element = $('<div>');
         element.addClass(CellBlock.className);
         element.css({
-            display: 'inline-block'
+            display: 'inline-block',
+            position: 'absolute',
         });
 
         if ( uid == undefined ) {
@@ -50,8 +51,8 @@ class CellBlock {
             attributes: false,
             childList: true,
         });
-;
-        return element
+        
+        return element;
     }
 
     static dataAttrTag = 'data-floatbook-cb-uid';
