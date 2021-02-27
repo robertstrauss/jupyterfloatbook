@@ -40,19 +40,17 @@ class CellDraggable {
         draggable.dragoffsettop  = draggable.getPosition().top  - draggable.dragcoords.top;
         draggable.dragoffsetleft = draggable.getPosition().left - draggable.dragcoords.left;
 
-        console.log('getpos', draggable.getPosition());
         // a private cell block for the element as it is dragged around
         draggable.dragcellblock = CellBlock.makeCellBlock();
         draggable.dragcellblock.appendTo(FloatBook.cellroot);
         draggable.element.appendTo(draggable.dragcellblock);
-        // draggable.do = true;
 
+        // move it to where it was before wrapping it
         draggable.dragcellblock.css({
             top: draggable.dragcoords.top + draggable.dragoffsettop,
             left: draggable.dragcoords.left + draggable.dragoffsetleft
         })
 
-        console.log('getpos', draggable.getPosition());
     }
 
 
@@ -64,42 +62,31 @@ class CellDraggable {
     onDrag(draggable, event) {
         event.preventDefault();
 
-        // so we can get whats beneath it on the other mouse events
+        // allows document.elementFromPoint to get whats beneath the cellblock
         draggable.dragcellblock.css('pointer-events', 'none');
-        draggable.element.css('pointer-events', 'none');
-        // get what is below the element
+        // get what is below the mouse (ignoring the cellblock)
         draggable.beneath = $(document.elementFromPoint(event.pageX, event.pageY)).closest('.cell');
-        // turn events back on (otherwise we couldn't interact with it after this!)
+        // turn events back on
         draggable.dragcellblock.css('pointer-events', 'all');
-        draggable.element.css('pointer-events', 'all');
 
 
-        if ( draggable.beneath.length > 0 && ! draggable.beneath.is(draggable.element) ) {
+        if ( draggable.beneath.length > 0 ) {
             // dragging over a cell
-            draggable.dropgroup = draggable.beneath.closest(CellBlock.className);
-
-            draggable.where = 'after';
+            draggable.dropgroup = draggable.beneath.closest(`.${CellBlock.className}`);
 
             // check if its on top/bottom (if vertical) or left/right (if horizontal)
-            if ( draggable.dropgroup.hasClass(CellBlock.horizontal) ) {
+            if ( draggable.dropgroup.hasClass(CellBlock.rowClass) ) {
                 draggable.where = event.pageX - draggable.beneath.offset().left < draggable.beneath.outerWidth()/2 ? 'before' : 'after';
-            } else if ( draggable.dropgroup.hasClass(CellBlock.vertical) ) {
+            } else if ( draggable.dropgroup.hasClass(CellBlock.colClass) ) {
                 draggable.where = event.pageY - draggable.beneath.offset().top < draggable.beneath.outerHeight()/2 ? 'before' : 'after';
+            } else {
+                console.warn('classless cellblock', draggable.dropgroup);
+                draggable.where = 'after';
             }
             // that will tell us wether it should be placed before (top/left) or after (bottom/right)
 
-            // let testelem = $('<div>');
-            // testelem.css({
-            //     height: 30,
-            //     border: '2px solid green',
-            //     background: 'yellow'
-            // });
-            // if ( draggable.do ) {
-                // this is a function call, it calls either jquery's before() or after()
-                // draggable.element[draggable.where](draggable.beneath);
-                draggable.beneath[draggable.where](draggable.element);
-            // }
-            // draggable.do = false;
+            // this is a function call, it calls either jquery's before() or after()
+            draggable.beneath[draggable.where](draggable.element);
         }
         else {
             // dragging over the notebook

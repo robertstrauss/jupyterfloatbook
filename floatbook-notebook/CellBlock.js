@@ -1,5 +1,7 @@
 class CellBlock {
     static className = 'floatbookcellblock';
+    static colClass = 'cellblockcolumn';
+    static rowClass = 'cellblockrow';
     static UID = 0;
 
     static getNewUID() {
@@ -36,9 +38,11 @@ class CellBlock {
     static makeCellBlock(uid=undefined) {
         const element = $('<div>');
         element.addClass(CellBlock.className);
+        element.addClass(CellBlock.colClass);
         element.css({
             display: 'inline-block',
             position: 'absolute',
+            flexFlow: 'column'
         });
 
         if ( uid == undefined ) {
