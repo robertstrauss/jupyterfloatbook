@@ -1,14 +1,23 @@
 class WireIO {
-    constructor(element) {
-        this.element = element;
 
-        this.wrapper = $('<div>');
-        this.element.after(this.wrapper);
-        this.element.appendTo(this.wrapper);
+    static pinClass = 'floatbookPin';
+    static inputPinClass = 'floatbookInputPin';
+    static outputPinClass = 'floatbookOutputPin';
 
-        this.wrapper.css({
-            border: '10px solid red'
-        });
+    constructor(cellblock) {
+        this.cellblock = cellblock;
+
+        this.inpin = $('<div>');
+        this.inpin.addClass(WireIO.pinClass);
+        this.inpin.addClass(WireIO.inputPinClass);
+        this.cellblock.before(this.inpin);
+
+        this.outpin = $('<div>');
+        this.outpin.addClass(WireIO.pinClass);
+        this.outpin.addClass(WireIO.outputPinClass);
+        this.cellblock.after(this.outpin);
+
+
     }
 
     getWrapper() {

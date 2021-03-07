@@ -10,21 +10,28 @@ class CellDraggable {
         // style draggable elements
         this.element.addClass(CellDraggable.className);
 
-        this.element.css({
-            background: 'white',
-            // position: 'absolute', // so it can move around freely
-        });
+        this.element.addClass('floatbook-floatcell');
 
         // this.moveTo(this.loadPosition().top, this.loadPosition().left);
 
         const draggable = this;
-        this.draggable = new Draggable(
-                this.element.find(CellDraggable.cellHandle),
-                (e)=>{draggable.beginDrag(draggable, e)},
-                (e)=>{draggable.onDrag(draggable, e)},
-                (e)=>{draggable.endDrag(draggable, e)},
-                [0] // only allow left mouse button to drag
-        );
+        // this.draggable = new Draggable(
+        //         this.element.find(CellDraggable.cellHandle),
+        //         (e)=>{draggable.beginDrag(draggable, e)},
+        //         (e)=>{draggable.onDrag(draggable, e)},
+        //         (e)=>{draggable.endDrag(draggable, e)},
+        //         [0] // only allow left mouse button to drag
+        // );
+        draggable.element.on('mousedown', function(e){
+            return draggable.beginDrag(draggable, e);
+        });
+        draggable.element.on('dblclick', function(e) {
+            
+        })
+        // drag listener
+        draggable.draglistener = function(e) {
+            return draggable.onDrag(draggable, e);
+        }
     }
 
     /**
@@ -33,24 +40,33 @@ class CellDraggable {
      * @param {MouseEvent} event
      */
     beginDrag(draggable, event) {
-        // draggable.dragcellblock = draggable.element.closest(CellBlock.className);
+        // draggable.dragblock = draggable.element.closest(CellBlock.className);
 
         // save where it was clicked
         draggable.dragcoords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
         draggable.dragoffsettop  = draggable.getPosition().top  - draggable.dragcoords.top;
         draggable.dragoffsetleft = draggable.getPosition().left - draggable.dragcoords.left;
 
-        // a private cell block for the element as it is dragged around
-        draggable.dragcellblock = CellBlock.makeCellBlock();
-        draggable.dragcellblock.appendTo(FloatBook.cellroot);
-        draggable.element.appendTo(draggable.dragcellblock);
+        // wait till first mouse movement, then start dragging
+        // draggable.element.one('mousemove', function(e) {
+            // create a new cell block for the element as it is dragged around
+            draggable.dragblock = CellBlock.makeCellBlock();
+            // CellBlock.placeIn(draggable.cell, draggable.dragblock);
 
-        // move it to where it was before wrapping it
-        draggable.dragcellblock.css({
-            top: draggable.dragcoords.top + draggable.dragoffsettop,
-            left: draggable.dragcoords.left + draggable.dragoffsetleft
-        })
+            // move it to where it was before wrapping it
+            // draggable.dragblock.css({
+            //     top: draggable.dragcoords.top + draggable.dragoffsettop,
+            //     left: draggable.dragcoords.left + draggable.dragoffsetleft
+            // });
 
+            
+            document.addEventListener('mousemove', draggable.draglistener);
+            document.addEventListener('mouseup', function (ee) {
+                return draggable.endDrag(draggable, ee);
+            });
+            // execute action from this movement
+            // return draggable.draglistener(e);
+        // });
     }
 
 
@@ -60,49 +76,61 @@ class CellDraggable {
      * @param {MouseEvent} event 
      */
     onDrag(draggable, event) {
-        event.preventDefault();
-
+        /**
+         * get what element is below the mouse and below the dragging element,
+         * if its a cell, combine the dragging element and that in a block
+         * otherwise, just follow the mouse
+         */
         // allows document.elementFromPoint to get whats beneath the cellblock
-        draggable.dragcellblock.css('pointer-events', 'none');
+        draggable.dragblock.css('pointer-events', 'none');
         // get what is below the mouse (ignoring the cellblock)
         draggable.beneath = $(document.elementFromPoint(event.pageX, event.pageY)).closest('.cell');
         // turn events back on
-        draggable.dragcellblock.css('pointer-events', 'all');
+        draggable.dragblock.css('pointer-events', 'all');
 
 
-        if ( draggable.beneath.length > 0 ) {
-            // dragging over a cell
-            draggable.dropgroup = draggable.beneath.closest(`.${CellBlock.className}`);
+        if ( draggable.beneath.length > 0 ) { // dragging over a cell
+            // get block that is being dragged over
+            draggable.dropblock = draggable.beneath.closest(`.${CellBlock.className}`);
 
-            // check if its on top/bottom (if vertical) or left/right (if horizontal)
-            if ( draggable.dropgroup.hasClass(CellBlock.rowClass) ) {
-                draggable.where = event.pageX - draggable.beneath.offset().left < draggable.beneath.outerWidth()/2 ? 'before' : 'after';
-            } else if ( draggable.dropgroup.hasClass(CellBlock.colClass) ) {
-                draggable.where = event.pageY - draggable.beneath.offset().top < draggable.beneath.outerHeight()/2 ? 'before' : 'after';
-            } else {
-                console.warn('classless cellblock', draggable.dropgroup);
-                draggable.where = 'after';
+            // drop the cell before or after the cell its hovering over
+            if ( draggable.dropblock.hasClass(CellBlock.colClass) ) {
+                if ( event.pageY - draggable.beneath.offset().top < draggable.beneath.outerHeight()/2 ) {
+                    draggable.beneath.before(draggable.element);
+                } else {
+                    draggable.beneath.after(draggable.element);
+                }
             }
+            // check if its on top/bottom (if vertical) or left/right (if horizontal)
+            // else if ( draggable.dropblock.hasClass(CellBlock.rowClass) ) {
+            //     draggable.where = event.pageX - draggable.beneath.offset().left < draggable.beneath.outerWidth()/2 ? 'before' : 'after';
+            // } else {
+            //     console.warn('classless cellblock', draggable.dropblock);
+            //     draggable.where = 'after';
+            // }
             // that will tell us wether it should be placed before (top/left) or after (bottom/right)
-
-            // this is a function call, it calls either jquery's before() or after()
-            draggable.beneath[draggable.where](draggable.element);
         }
-        else {
-            // dragging over the notebook
-
+        else { // dragging over the notebook
+            // move cell to drag block if it was put in somewhere else
+            if ( ! draggable.element.parent().is(draggable.dragblock) ) {
+                draggable.dragblock.append(draggable.element);
+            }
             // get pointer location
             draggable.dragcoords = FloatBook.pageToCellRootCoords(event.pageY, event.pageX);
             // move private block there
-            draggable.dragcellblock.css({
+            draggable.dragblock.css({
                 top: draggable.dragoffsettop + draggable.dragcoords.top,
                 left: draggable.dragoffsetleft + draggable.dragcoords.left
             });
-            // put it back in the private block (in case it got moved out)
-            draggable.element.appendTo(draggable.dragcellblock);
+            // CellBlock.placeIn(draggable.cell, draggable.dragblock);
         }
         
-        // pan view if mouse is near an edge
+
+
+
+        /** 
+         * pan view if mouse is near an edge
+         */
         for ( let x of [-1, 1] ) { // two for loops cycle over corners of box surrounding mouse
             for ( let y of [-1, 1] ) {
                 // check if this corner (x,y) is outside of FloatBook.view
@@ -118,6 +146,7 @@ class CellDraggable {
                 }
             }
         }
+
     }
 
 
@@ -127,55 +156,14 @@ class CellDraggable {
      * @param {MouseEvent} event 
      */
     endDrag(draggable, event) {
-        // metadata for the new position needs to be saved
-        Jupyter.notebook.dirty = true;
+        // remove drag listener
+        document.removeEventListener('mousemove', draggable.draglistener);
 
-
-        
-
-        // save new position
-        draggable.savePosition();
+        // save metadata
+        CellBlock.saveCellData(draggable.cell);
+        CellBlock.saveBlockData(draggable.dragblock);
     }
 
-
-    onDragOver(event, destinationElement) {
-        // let cell = CellBlock.getParentCell(destinationElement);
-        // if ( cell !== null ) { // if there is a parent cell
-        //     if ( CellBlock.isInBlock(dtopestinationElement) ) {
-        //         let direction = CellBlock.getOrientation(CellBlock.getParentBlock(destinationElement));
-        //         if ( direction == 'row' ) {
-        //             if ( event.pageX - cell.offset().left > 0.5*cell.outerWidth() )
-        //         }
-        //     }
-        // } else if ( destinationElement.is(FloatBook.notebookroot) ) {
-        //     FloatBook.cellroot.append(sourceCell);
-        // } else {
-        //     // didn't drop on a logical thing
-        // }
-    }
-    onDragOut(destinationElement) {
-
-    }
-    onDrop() {
-
-    }
-
-
-
-
-    /**
-     * 
-     */
-    savePosition() {
-        this.cell.metadata.floatposition = this.getPosition();
-        
-        Jupyter.notebook.set_dirty();
-    }
-
-
-    loadPosition() {
-        return this.cell.metadata.floatposition || this.element.offset();
-    }
 
     /**
      * @returns object with 'top' and 'left' properties
@@ -186,28 +174,6 @@ class CellDraggable {
             top:  parseInt(this.element.css('top')) + parseInt(this.element.closest(`.${CellBlock.className}`).css('top')),
             left: parseInt(this.element.css('left')) + parseInt(this.element.closest(`.${CellBlock.className}`).css('left'))
         };
-    }
-
-    /**
-     * moves draggable element
-     * @param {Number} top 
-     * @param {Number} left 
-     */
-    // moveTo(top, left) {
-    //     this.element.css({
-    //         top:  top,
-    //         left: left
-    //     });
-    // }
-
-    /**
-     * changes draggable element position
-     * @param {Number} dtop 
-     * @param {Number} dleft 
-     */
-    moveBy(dtop, dleft) {
-        let pos = Draggable.getPosition(this.element);
-        this.moveTo(pos.top+dtop, pos.left+dleft);
     }
 
 

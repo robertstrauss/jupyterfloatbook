@@ -5,6 +5,12 @@ class FloatBook {
 
 
     constructor(Jupyter, events) {
+        if ( Jupyter.notebook.metadata.floatbook == undefined ) {
+            Jupyter.notebook.metadata.floatbook = {};
+        }
+        if ( Jupyter.notebook.metadata.floatbook.cellblocks == undefined ) {
+            Jupyter.notebook.metadata.floatbook.cellblocks = {};
+        }
         // bind event
         events.on('create.Cell', (e,data)=>{
             FloatBook.initiateCell(data.cell);
@@ -17,7 +23,7 @@ class FloatBook {
 
         // CSS
         FloatBook.view.css({
-            position: 'relative', 
+            position: 'relative',
             overflow: 'hidden'
         });
         FloatBook.cellroot.css({
@@ -30,7 +36,7 @@ class FloatBook {
             position: 'absolute',
             top: 0,
             left: 0,
-            overflow: 'shown'
+            overflow: 'shown',
         });
 
         // add zoom listener
@@ -155,23 +161,14 @@ class FloatBook {
      * @param {Object} cell 
      */
     static addCell = function(cell) {
+
+        // make sure the metadata has a floatbook feild
         if ( cell.metadata.floatbook == undefined ) {
             cell.metadata.floatbook = {};
+            Jupyter.notebook.set_dirty();
         }
 
-        let cellblock;
-
-        // retrieve cellblock from DOM if it is already part of one
-        if ( cell.metadata.floatbook.cellblockid !== undefined ) {
-            cellblock = CellBlock.getCellBlock(cell.metadata.floatbook.cellblockid);
-        }
-        // if its not, or if the cell block it needs isn't in the DOM yet, create it
-        if ( cellblock.length < 1 || cell.metadata.floatbook.cellblockid == undefined ) {
-            cellblock = CellBlock.makeCellBlock(cell.metadata.floatbook.cellblockid);
-            cellblock.appendTo(FloatBook.cellroot);
-            cellblock.append(cell.element);
-            cell.metadata.floatbook.cellblockid = CellBlock.getUID(cellblock);
-        }
+        CellBlock.placeCell(cell);
 
         // new WireIO(cellblock);
         // new Resizable(cellblock);

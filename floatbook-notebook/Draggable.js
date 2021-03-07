@@ -27,12 +27,10 @@ class Draggable {
 
         this.buttons = buttons;
 
-        let draggable = this;
-        this.element.on('mousedown', function (...args) {
+        const draggable = this;
+        draggable.element.on('mousedown', function (...args) {
             draggable.beginDrag(draggable, ...args);
         });
-
-
         draggable.draglistener = function(...args){
             draggable.onDrag(draggable, ...args);
         };
@@ -52,7 +50,7 @@ class Draggable {
         }
 
         // run event
-        let status = draggable.clientBeginDrag(event);
+        const status = draggable.clientBeginDrag(event);
         if ( status == false || status > 0 ) {
             return status;
         }

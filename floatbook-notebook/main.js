@@ -16,7 +16,11 @@ define([
 ], function (Jupyter, events, requirejs) {
 
 // add stylesheet
-$('head').append($('<style>').attr('href', requirejs.toUrl('./style.css')));
+$('head').append($('<link>').
+    attr('href', requirejs.toUrl('./style.css')).
+    attr('rel', 'stylesheet').
+    attr('type', 'text/css')    
+);
 
 
 // should be on a notebook loaded event, but that doesn't currently work
