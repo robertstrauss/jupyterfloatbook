@@ -42,6 +42,8 @@ class CellBlock {
             position: 'absolute',
             flexFlow: 'column'
         });
+        
+        new WireIO(element);
 
         const uid = CellBlock.getNewUID();
         CellBlock.setUID(element, uid);

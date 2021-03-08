@@ -2,6 +2,7 @@ class FloatBook {
     static cellroot = $('#notebook-container');
     static view = $('#site');
     static notebookroot = $('#notebook');
+    static wireplane = $('<svg id="floatbook-wireplane">');
 
 
     constructor(Jupyter, events) {
@@ -20,7 +21,9 @@ class FloatBook {
         for ( let cell of Jupyter.notebook.get_cells().reverse() ) {
             FloatBook.addCell(cell);
         }
-
+        
+        
+        FloatBook.cellroot.prepend(FloatBook.wireplane);
         // CSS
         FloatBook.view.css({
             position: 'relative',

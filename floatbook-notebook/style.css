@@ -11,6 +11,16 @@
     overflow: 'shown';
 }
 
+#floatbook-wireplane {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1000px;
+    height: 300px;
+    border: 3px solid blue;
+    background: rgba(0, 0, 0, 0.1);
+}
+
 
 .floatbook-floatcell {
     background-color: white;
@@ -18,4 +28,24 @@
 
 .floatbook-cellblock {
     box-shadow: 0px 2px 5px black;
+}
+
+
+
+.floatbook-wirepin {
+/*     position: absolute; */
+    width: 100%; /** TODO: change this to depend on wether cellblock is horizontal or vertical (row/col) */
+    height: 30px;
+}
+.floatbook-inputpin {
+    order: -1;
+    top: 0;
+    left: 0;
+    background: lightgreen;
+}
+.floatbook-outputpin {
+    order: 1;
+    bottom: 0;
+    right: 0;
+    background: lightblue;
 }
