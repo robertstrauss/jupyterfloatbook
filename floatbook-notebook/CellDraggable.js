@@ -25,8 +25,17 @@ class CellDraggable {
         draggable.element.on('mousedown', function(e){
             return draggable.beginDrag(draggable, e);
         });
-        draggable.element.on('dblclick', function(e) {
+        // select wntire block of a cell when its double clicked
+        draggable.element.on('dblclick', function(event) {
+            const selectblock = draggable.element.closest(`.${CellBlock.className}`);
             
+            // select (and set anchor to) first cell in block of cell being double clicked
+            selectblock.children('.cell:first-child').trigger('click');
+            
+            // select whole block by shift-clicking final cell
+            const shiftClick = jQuery.Event('click');
+            shiftClick.shiftKey = true;
+            selectblock.children('.cell:last-child').trigger(shiftClick);
         })
         // drag listener
         draggable.draglistener = function(e) {
@@ -58,6 +67,16 @@ class CellDraggable {
             //     top: draggable.dragcoords.top + draggable.dragoffsettop,
             //     left: draggable.dragcoords.left + draggable.dragoffsetleft
             // });
+            
+            // drag the whole selection if dragging on a selected cell
+            if ( Jupyter.notebook.get_selected_cells().indexOf(draggable.cell) !== -1 ) {
+                for ( let selectcell of Jupyter.notebook.get_selected_cells() ) {
+                    draggable.element = draggable.element.add(selectcell.element); // group selected cells into jquery object
+                }
+            } else {
+                // only drag the one cell
+                draggable.element = draggable.cell.element;
+            }
 
             
             document.addEventListener('mousemove', draggable.draglistener);

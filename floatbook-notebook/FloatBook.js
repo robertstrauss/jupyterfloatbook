@@ -158,7 +158,7 @@ class FloatBook {
 
     /**
      * 
-     * @param {Object} cell 
+     * @param {Object} cell
      */
     static addCell = function(cell) {
 

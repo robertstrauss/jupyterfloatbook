@@ -62,11 +62,11 @@ class CellBlock {
         CellBlock.setUID(element, id);
 
         const metadata = Jupyter.notebook.metadata.floatbook.cellblocks[id];
-
+        
         if ( metadata == undefined ) {
             return element;
         }
-
+        
         if ( metadata.position !== undefined ) {
             element.css({
                 top: metadata.position.top,
@@ -107,7 +107,7 @@ class CellBlock {
 
     static saveCellData(cell) {
         // get the block the cell is in
-        const block = cell.element.closest(CellBlock.className);
+        const block = cell.element.closest(`.${CellBlock.className}`);
 
         // create floatbook entry in metadata if needed
         if ( cell.metadata.floatbook == undefined ) {
@@ -129,7 +129,7 @@ class CellBlock {
 
     static placeCell(cell) {
         let cellblock;
-
+        
         // retrieve cellblock from DOM if it is already part of one
         if ( cell.metadata.floatbook.cellblockid !== undefined ) {
             cellblock = CellBlock.getCellBlock(cell.metadata.floatbook.cellblockid);
@@ -140,6 +140,7 @@ class CellBlock {
         }
         // if it isn't reserved to a cellblock in the file
         else {
+            console.log('no cbid!', cell.element, cell.metadata.floatbook.cellblockid)
             cellblock = CellBlock.makeCellBlock();
             // move cell block to where cell was
             // console.log(cell, cell.element.offset());
