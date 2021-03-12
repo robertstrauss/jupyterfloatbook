@@ -142,15 +142,17 @@ class CellBlock {
         }
         // if it isn't reserved to a cellblock in the file
         else {
-            console.log('no cbid!', cell.element, cell.metadata.floatbook.cellblockid)
-            cellblock = CellBlock.makeCellBlock();
+            if (CellBlock.defaultBlock == undefined) {
+                CellBlock.defaultBlock = CellBlock.makeCellBlock();
+            }
+            cellblock = CellBlock.defaultBlock;
+//             cellblock = CellBlock.makeCellBlock();
             // move cell block to where cell was
-            // console.log(cell, cell.element.offset());
-            cellblock.css({
-                top: cell.element.offset().top,
-                left: cell.element.offset().left
-            });
-
+//             cellblock.css({
+//                 top: cell.element.offset().top,
+//                 left: cell.element.offset().left
+//             });
+            
             cell.metadata.floatbook.cellblockid = CellBlock.getUID(cellblock);
             Jupyter.notebook.set_dirty();
         }

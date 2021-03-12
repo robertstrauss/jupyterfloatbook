@@ -6,15 +6,17 @@ class FloatBook {
 
 
     constructor(Jupyter, events) {
+        // add metadata entries
         if ( Jupyter.notebook.metadata.floatbook == undefined ) {
             Jupyter.notebook.metadata.floatbook = {};
         }
         if ( Jupyter.notebook.metadata.floatbook.cellblocks == undefined ) {
             Jupyter.notebook.metadata.floatbook.cellblocks = {};
         }
+
         // bind event
         events.on('create.Cell', (e,data)=>{
-            FloatBook.initiateCell(data.cell);
+            FloatBook.addCell(data.cell);
         });
 
         // load mosaic structure
@@ -23,7 +25,7 @@ class FloatBook {
         }
         
         
-        FloatBook.cellroot.prepend(FloatBook.wireplane);
+        FloatBook.notebookroot.append(FloatBook.wireplane);
         // CSS
         FloatBook.view.css({
             position: 'relative',
@@ -116,6 +118,13 @@ class FloatBook {
             transform: `scale(${1/scale})`,
             transformOrigin: '0 0'
         });
+
+        // pan and zoom wires
+        const pan = FloatBook.getPan();
+        FloatBook.wireplane.attr('viewBox', `
+                    ${-pan.left/scale} ${-pan.top/scale} 
+                    ${FloatBook.wireplane.outerWidth()/scale} 
+                    ${FloatBook.wireplane.outerHeight()/scale}`);
     }
     static getZoom() {
         const transform = FloatBook.getTransform();
@@ -131,6 +140,13 @@ class FloatBook {
     static panTo(top, left) {
         FloatBook.cellroot.css('top',  top);
         FloatBook.cellroot.css('left', left);
+
+        // pan and zoom wires
+        const zoom = FloatBook.getZoom();
+        FloatBook.wireplane.attr('viewBox', `
+                    ${-left/zoom} ${-top/zoom} 
+                    ${FloatBook.wireplane.outerWidth()/zoom} 
+                    ${FloatBook.wireplane.outerHeight()/zoom}`);
     }
     static getPan() {
         return {
@@ -147,7 +163,6 @@ class FloatBook {
         }
         return tmatrix[1].split(', ');
     }
-
 
 
     static getMetadata = function() {

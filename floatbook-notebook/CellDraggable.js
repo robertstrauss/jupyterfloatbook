@@ -30,12 +30,12 @@ class CellDraggable {
             const selectblock = draggable.element.closest(`.${CellBlock.className}`);
             
             // select (and set anchor to) first cell in block of cell being double clicked
-            selectblock.children('.cell:first-child').trigger('click');
+            selectblock.children('.cell').first().trigger('click');
             
             // select whole block by shift-clicking final cell
             const shiftClick = jQuery.Event('click');
             shiftClick.shiftKey = true;
-            selectblock.children('.cell:last-child').trigger(shiftClick);
+            selectblock.children('.cell').last().trigger(shiftClick);
         })
         // drag listener
         draggable.draglistener = function(e) {
